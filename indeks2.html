@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja Dzieci w Przedszkolu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Rejestracja Dzieci w Przedszkolu</h1>
+    <form id="attendanceForm">
+        <label for="childName">Imię i nazwisko dziecka:</label>
+        <input type="text" id="childName" name="childName" required><br><br>
+
+        <label for="arrivalTime">Godzina przyjścia:</label>
+        <input type="time" id="arrivalTime" name="arrivalTime" required><br><br>
+
+        <label for="departureTime">Godzina wyjścia:</label>
+        <input type="time" id="departureTime" name="departureTime" required><br><br>
+
+        <button type="submit">Dodaj wpis</button>
+    </form>
+
+    <h2>Zarejestrowana obecność</h2>
+    <table id="attendanceTable" border="1">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Imię i nazwisko dziecka</th>
+                <th>Godzina przyjścia</th>
+                <th>Godzina wyjścia</th>
+                <th>Suma godzin</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dane będą dodawane tutaj -->
+        </tbody>
+    </table>
+
+    <br>
+    <button onclick="exportToExcel()">Eksportuj do Excela</button>
+
+    <script>
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Pobranie danych z formularza
+            const childName = document.getElementById('childName').value;
+            const arrivalTime = document.getElementById('arrivalTime').value;
+            const departureTime = document.getElementById('departureTime').value;
+            const currentDate = new Date().toLocaleDateString('pl-PL');
+
+            // Obliczanie sumy godzin
+            const arrivalDateTime = new Date(`1970-01-01T${arrivalTime}:00`);
+            const departureDateTime = new Date(`1970-01-01T${departureTime}:00`);
+            const diffInMs = departureDateTime - arrivalDateTime;
+            const diffInHours = (diffInMs / (1000 * 60 * 60)).toFixed(2); // Wynik w godzinach
+            
+            // Usunięcie wcześniejszych danych (pokazujemy tylko najnowszy wpis)
+            const table = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+            table.innerHTML = ''; // Wyczyść tabelę
+            
+            // Dodanie nowych danych do tabeli
+            const newRow = table.insertRow();
+            newRow.insertCell(0).innerText = currentDate;
+            newRow.insertCell(1).innerText = childName;
+            newRow.insertCell(2).innerText = arrivalTime;
+            newRow.insertCell(3).innerText = departureTime;
+            newRow.insertCell(4).innerText = diffInHours + " godz.";
+            
+            // Resetowanie formularza
+            document.getElementById('attendanceForm').reset();
+        });
+
+        function exportToExcel() {
+            const table = document.getElementById('attendanceTable');
+            const workbook = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(workbook, 'zarejestrowana_obecnosc.xlsx');
+        }
+    </script>
+</body>
+</html>
